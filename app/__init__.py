@@ -11,7 +11,8 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
 
-    from .routes import bp as routes_bp
+    from .routes import bp as routes_bp, health_bp
     app.register_blueprint(routes_bp)
+    app.register_blueprint(health_bp, url_prefix='')
 
     return app

@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify
 from .models import Blacklist
-from .init import db
+from . import db
 from .auth import token_required
 
 bp = Blueprint('routes', __name__)
+health_bp = Blueprint('health', __name__)
 
 @bp.route('/blacklists', methods=['POST'])
 @token_required
@@ -41,3 +42,7 @@ def check_blacklist(email):
             'blocked_reason': entry.blocked_reason
         }), 200
     return jsonify({'blacklisted': False}), 200
+
+@health_bp.route('/', methods=["GET"])
+def index():
+    return {"message": "API running"}, 200

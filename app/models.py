@@ -1,4 +1,4 @@
-from .init import db
+from . import db
 from datetime import datetime
 
 class Blacklist(db.Model):
