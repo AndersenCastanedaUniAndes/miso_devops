@@ -14,8 +14,17 @@ def add_to_blacklist():
     app_uuid = data.get('app_uuid')
     blocked_reason = data.get('blocked_reason', '')
 
-    if not email or not app_uuid:
-        return jsonify({'error': 'email and app_uuid are required'}), 400
+    if not email:
+        return jsonify({'error': 'email required'}), 400
+
+    if not app_uuid:
+        return jsonify({'error': 'app_uuid required'}), 400
+
+    if len(app_uuid) != 36 or not all(c in '0123456789abcdef-' for c in app_uuid):
+        return jsonify({'error': 'Invalid app_uuid format'}), 400
+
+    if len(blocked_reason) > 255:
+        return jsonify({'error': 'blocked_reason exceeds maximum length'}), 400
 
     existing = Blacklist.query.filter_by(email=email).first()
     if existing:
