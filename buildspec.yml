@@ -1,28 +1,38 @@
 version: 0.2
 
 phases:
-  install:
-    commands:
-      - pip install -r requirements.txt  # Instalar dependencias
   pre_build:
     commands:
-      - echo Running tests...  # Mensaje para mostrar en el log
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 356530442800.dkr.ecr.us-east-1.amazonaws.com
   build:
     commands:
-      - pytest --maxfail=1 --disable-warnings --tb=short  # Ejecutar pruebas, detener al primer fallo, ocultar advertencias y mostrar traceback corto
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build -t devops:latest .
+      - echo Running tests...
+      - pytest --maxfail=1 --disable-warnings --tb=short
+      - echo tagging the Docker image...
+      - docker tag devops:latest 356530442800.dkr.ecr.us-east-1.amazonaws.com/devops:latest
   post_build:
     commands:
-      - echo "Empaquetando artefacto..."
-      - zip -r artifact.zip .
-      - echo "Subiendo artifact.zip a S3..."
-      - aws s3 cp artifact.zip s3://bucket-deploy-1-1/artifact.zip
-
+      - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - docker push 356530442800.dkr.ecr.us-east-1.amazonaws.com/devops:latest
+      - echo Writing Image Definitions file...
+      - printf '[{"name":"Container-app-python","imageUri":"356530442800.dkr.ecr.us-east-1.amazonaws.com/devops:latest"}]' > imagedefinitions.json
+      - printf '{"ImageURI":"356530442800.dkr.ecr.us-east-1.amazonaws.com/devops:latest"}' > imageDetail.json
+      - cat imagedefinitions.json
 artifacts:
   files:
-    - artifact.zip
-
-Deploy:
-  Type: S3
-  BucketName: bucket-deploy-1-1
-  Extract: true
-
+    - '**/*'
+    - imagedefinitions.json
+    - imageDetail.json
+  secondary-artifacts:
+    DefinitionArtifact:
+      files:
+        - appspec.yaml
+        - taskdef.json
+    ImageArtifact:
+      files:
+        - imageDetail.json
