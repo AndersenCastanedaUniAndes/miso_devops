@@ -5,7 +5,7 @@
       "TargetService": {
         "Type": "AWS::ECS::Service",
         "Properties": {
-          "TaskDefinition": "arn:aws:ecs:us-east-1:356530442800:task-definition/devops-task:4",
+          "TaskDefinition": "arn:aws:ecs:us-east-1:356530442800:task-definition/devops-task:1",
           "LoadBalancerInfo": {
             "ContainerName": "devops-container",
             "ContainerPort": 5000
