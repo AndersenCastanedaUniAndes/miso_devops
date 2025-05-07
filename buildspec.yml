@@ -1,8 +1,18 @@
 version: 0.2
 
 phases:
+  install:
+    runtime-versions:
+      python: 3.11
+      docker: 20
+    commands:
+      - echo "Instalando dependencias..."
+      - pip install --upgrade pip
+      - pip install -r requirements.txt
   pre_build:
     commands:
+      - echo Running tests...
+      - pytest --maxfail=1 --disable-warnings --tb=short
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 356530442800.dkr.ecr.us-east-1.amazonaws.com
   build:
@@ -10,8 +20,6 @@ phases:
       - echo Build started on `date`
       - echo Building the Docker image...
       - docker build -t devops:latest .
-      - echo Running tests...
-      - pytest --maxfail=1 --disable-warnings --tb=short
       - echo tagging the Docker image...
       - docker tag devops:latest 356530442800.dkr.ecr.us-east-1.amazonaws.com/devops:latest
   post_build:
